@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Vibrator;
 import android.view.MotionEvent;
 import android.view.View;
@@ -22,11 +23,10 @@ public class ActivityMain extends Activity implements OnTouchListener {
     private Camera.Parameters pOn;
     private Camera.Parameters pOff;
     private Camera cam;
-    private boolean requestStop = false;
-    private boolean isRunning = false;
-    private int delay = 10;
-    private int delayoff = 10;
-    private Thread bw;
+    private Handler mHander = new Handler();
+    private boolean mActive = false;
+    private boolean mSwap = true;
+    private int strobeInterval = 25;
 
     // handles vibration
     private Vibrator vb;
@@ -54,8 +54,8 @@ public class ActivityMain extends Activity implements OnTouchListener {
         // sets up strobe light
         cam = Camera.open();
         pOn = cam.getParameters();
-        pOff = cam.getParameters();
         pOn.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+        pOff = cam.getParameters();
         pOff.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
 
         // sets touch listener
@@ -75,18 +75,8 @@ public class ActivityMain extends Activity implements OnTouchListener {
             vb.vibrate(1000 * 60 * 10);
 
             // flashes
-            while (!requestStop) {
-                try {
-                    cam.setParameters(pOn);
-                    Thread.sleep(delay);
-                    cam.setParameters(pOff);
-                    Thread.sleep(delayoff);
-                } catch (InterruptedException ex) {
-
-                } catch (RuntimeException ex) {
-                    requestStop = true;
-                }
-            }
+            mActive = true;
+            mHander.post(mStrobeRunnable);
 
             // TODO: plays sound
 
@@ -103,7 +93,8 @@ public class ActivityMain extends Activity implements OnTouchListener {
             vb.cancel();
 
             // stops flash
-            requestStop = true;
+            mHander.removeCallbacks(mStrobeRunnable);
+            cam.setParameters(pOff);
 
             // TODO: stops playing sound
 
@@ -114,8 +105,40 @@ public class ActivityMain extends Activity implements OnTouchListener {
 
     @Override
     protected void onPause() {
-        super.onStop();
+        super.onPause();
+
+        // cancels vibration
         vb.cancel();
-        cam.release();
+
+        // releases the camera if not already done
+        if (cam != null) {
+            cam.release();
+        }
+
+        // exits the Activity
+        finish();
     }
+
+    private final Runnable mStrobeRunnable = new Runnable() {
+
+        public void run() {
+            if (mActive) {
+                if (mSwap) {
+
+                    // turns on
+                    cam.setParameters(pOn);
+                    mSwap = false;
+                    mHander.postDelayed(mStrobeRunnable, strobeInterval);
+                } else {
+
+                    // turns off
+                    cam.setParameters(pOff);
+                    mSwap = true;
+                    mHander.postDelayed(mStrobeRunnable, strobeInterval);
+                }
+            }
+        }
+    };
+
+
 }
