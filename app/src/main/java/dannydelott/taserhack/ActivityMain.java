@@ -26,7 +26,7 @@ public class ActivityMain extends Activity implements OnTouchListener {
     private Handler mHander = new Handler();
     private boolean mActive = false;
     private boolean mSwap = true;
-    private int strobeInterval = 25;
+    private int strobeInterval = 35;
 
     // handles vibration
     private Vibrator vb;
@@ -94,7 +94,9 @@ public class ActivityMain extends Activity implements OnTouchListener {
 
             // stops flash
             mHander.removeCallbacks(mStrobeRunnable);
-            cam.setParameters(pOff);
+            if(cam != null){
+                cam.setParameters(pOff);
+            }
 
             // TODO: stops playing sound
 
