@@ -1,36 +1,82 @@
 package dannydelott.taserhack;
 
-import android.support.v7.app.ActionBarActivity;
+import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.os.Vibrator;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.RelativeLayout;
 
+public class ActivityMain extends Activity implements OnTouchListener {
 
-public class ActivityMain extends ActionBarActivity {
+    // ///////////////////
+    // GLOBAL VARIABLES //
+    // ///////////////////
+
+    // handles vibration
+    private Vibrator vb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // removes title
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_main);
+
+        // gets background relative layout for handling touch events
+        RelativeLayout background = (RelativeLayout) findViewById(R.id.background);
+
+        // initalizes global vibrator
+        vb = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        // sets up strobe light
+
+        // sets touch listener
+        background.setOnTouchListener(this);
     }
 
-
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
-    }
+    public boolean onTouch(View v, MotionEvent event) {
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        // --------------
+        // ON FINGER DOWN
+        // --------------
+
+        if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_DOWN) {
+
+            // vibrates (set to 10 minutes)
+            vb.vibrate(1000 * 60 * 10);
+
+            // TODO: flashes
+
+            // TODO: plays sound
+
             return true;
         }
-        return super.onOptionsItemSelected(item);
+
+        // ------------
+        // ON FINGER UP
+        // ------------
+
+        if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
+
+            // cancels vibration
+            vb.cancel();
+
+            // TODO: stops flash
+
+            // TODO: stops playing sound
+
+            return false;
+        }
+        return false;
     }
 }
