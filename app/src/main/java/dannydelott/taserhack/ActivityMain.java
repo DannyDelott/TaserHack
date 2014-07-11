@@ -72,7 +72,7 @@ public class ActivityMain extends Activity implements OnTouchListener, SoundPool
         // sets up sound effects
         sp = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
         sp.setOnLoadCompleteListener(this);
-        soundId = sp.load(this, R.raw.taser2, 1);
+        soundId = sp.load(this, R.raw.taser5, 1);
 
 
     }
