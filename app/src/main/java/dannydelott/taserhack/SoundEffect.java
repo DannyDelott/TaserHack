@@ -19,11 +19,19 @@ public class SoundEffect implements OnLoadCompleteListener {
     private int streamId;
     private boolean loadedSound;
 
-    public SoundEffect(Context context, int resId) {
 
+    public static SoundEffect newInstance(Context context, int resId) {
+        SoundEffect s = new SoundEffect(context, resId);
+        return s;
+
+    }
+
+    private SoundEffect(Context context, int resId) {
+
+        loadedSound = false;
         sp = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-        sp.setOnLoadCompleteListener(this);
         soundId = sp.load(context, resId, 1);
+        sp.setOnLoadCompleteListener(this);
     }
 
     public boolean isSoundLoaded() {
@@ -58,7 +66,6 @@ public class SoundEffect implements OnLoadCompleteListener {
 
     @Override
     public void onLoadComplete(SoundPool soundPool, int i, int i2) {
-
         loadedSound = true;
     }
 }

@@ -3,7 +3,6 @@ package dannydelott.taserhack;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -62,27 +61,17 @@ public class ActivityMain extends Activity implements OnTouchListener {
 
         // sets up volume
         volume = new Volume(this);
+        volume.setToMaxVolume();
 
         // sets up sound effects
-        soundEffect = new SoundEffect(this, R.raw.taser3);
+        soundEffect = SoundEffect.newInstance(this, R.raw.taser3);
 
         // makes background clickable
         background.setOnTouchListener(this);
-       // sp = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-       // sp.setOnLoadCompleteListener(this);
-       // soundId = sp.load(this, R.raw.taser3, 1);
+
 
 
     }
-
-   // @Override
-   // public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
-
-  //      loadedSound = true;
-
-        // sets background touch listener
-  //      background.setOnTouchListener(this);
-  //  }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -93,22 +82,15 @@ public class ActivityMain extends Activity implements OnTouchListener {
 
         if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_DOWN) {
 
+            // plays sound
+            soundEffect.playSound(true);
+
             // vibrates (set to 10 minutes)
             vb.vibrate(1000 * 60 * 10);
 
             // flashes
             strobe.setStrobeOn();
 
-            // sets max volume
-            volume.setToMaxVolume();
-
-            // plays sound
-            if(soundEffect.isSoundLoaded()){
-                soundEffect.playSound(true);
-            }
-            //if (loadedSound) {
-           //     streamId = sp.play(soundId, 1, 1, 1, -1, 1.0f);
-           // }
             return true;
         }
 
@@ -118,20 +100,15 @@ public class ActivityMain extends Activity implements OnTouchListener {
 
         if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
 
+            // stops playing sound
+            soundEffect.stopSound();
+
             // cancels vibration
             vb.cancel();
 
             // stops flash
             strobe.setStrobeOff();
 
-            // stops playing sound
-            if(soundEffect.isSoundLoaded()){
-                soundEffect.stopSound();
-            }
-
-            //if (loadedSound) {
-           //     sp.stop(streamId);
-           // }
             return false;
         }
         return false;
@@ -139,7 +116,7 @@ public class ActivityMain extends Activity implements OnTouchListener {
 
     @Override
     protected void onStop() {
-        super.onPause();
+        super.onStop();
 
         // cancels vibration
         vb.cancel();
@@ -147,17 +124,11 @@ public class ActivityMain extends Activity implements OnTouchListener {
         // releases the camera if not already done
         strobe.releaseCamera();
 
-
         // stops the sound effects and releases the SoundPool
-        if(soundEffect.isSoundLoaded()){
+        if (soundEffect.isSoundLoaded()) {
             soundEffect.stopSound();
             soundEffect.releaseSoundPool();
         }
-
-       //  if (loadedSound) {
-       //     sp.stop(soundId);
-       //     sp.release();
-       // }
 
         // exits the Activity
         finish();
