@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="tomato">#AF141B</color>
+    <color name="grey">#DDDDDD</color>
+    <color name="dark_grey">#808080</color>
+    <color name="percent_54_black">#757575</color>
+    <color name="percent_87_black">#212121</color>
+    <color name="blue_raspberry">#245367</color>
+    <color name="cyan">#14AFA8</color>
+    <color name="green">#14AF5A</color>
+    <color name="white">#FFFFFF</color>
+    <color name="darkred">#6B1315</color>
+</resources>

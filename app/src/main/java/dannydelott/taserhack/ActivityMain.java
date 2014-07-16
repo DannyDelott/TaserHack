@@ -2,12 +2,12 @@ package dannydelott.taserhack;
 
 import android.app.Activity;
 import android.content.Context;
-import android.hardware.Camera;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -16,7 +16,7 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.RelativeLayout;
 
-public class ActivityMain extends Activity implements OnTouchListener, SoundPool.OnLoadCompleteListener {
+public class ActivityMain extends Activity implements OnTouchListener {
 
     // ///////////////////
     // GLOBAL VARIABLES //
@@ -26,18 +26,16 @@ public class ActivityMain extends Activity implements OnTouchListener, SoundPool
     private RelativeLayout background;
 
     // handles strobing flash
-    private Camera cam;
-    private Camera.Parameters pOn;
-    private Camera.Parameters pOff;
-    private Handler mHandler = new Handler();
-    private boolean mActive = false;
-    private boolean mSwap = true;
-    private int strobeInterval = 35;
+    private Strobe strobe;
 
     // holds vibration
     private Vibrator vb;
 
+    // handles volume
+    private Volume volume;
+
     // handles sound effects
+    private SoundEffect soundEffect;
     private SoundPool sp;
     private int soundId;
     private int streamId;
@@ -51,40 +49,40 @@ public class ActivityMain extends Activity implements OnTouchListener, SoundPool
         setContentView(R.layout.activity_main);
 
         // gets background relative layout for handling touch events
-        background = (RelativeLayout) findViewById(R.id.background);
+        background = (RelativeLayout) findViewById(R.id.rl_Background);
 
         // sets up vibrator
         vb = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         // sets up strobe light
-        cam = Camera.open();
-        pOn = cam.getParameters();
-        pOn.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-        pOff = cam.getParameters();
-        pOff.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+        strobe = Strobe.newInstance(35);
+        if (strobe == null) {
+            Log.d("error", "fuck");
+        }
 
-        // sets max volume
-        AudioManager audioManager =
-                (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,
-                audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0);
+        // sets up volume
+        volume = new Volume(this);
 
         // sets up sound effects
-        sp = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-        sp.setOnLoadCompleteListener(this);
-        soundId = sp.load(this, R.raw.taser5, 1);
+        soundEffect = new SoundEffect(this, R.raw.taser3);
 
-
-    }
-
-    @Override
-    public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
-
-        loadedSound = true;
-
-        // sets touch listener
+        // makes background clickable
         background.setOnTouchListener(this);
+       // sp = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+       // sp.setOnLoadCompleteListener(this);
+       // soundId = sp.load(this, R.raw.taser3, 1);
+
+
     }
+
+   // @Override
+   // public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+
+  //      loadedSound = true;
+
+        // sets background touch listener
+  //      background.setOnTouchListener(this);
+  //  }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -99,13 +97,18 @@ public class ActivityMain extends Activity implements OnTouchListener, SoundPool
             vb.vibrate(1000 * 60 * 10);
 
             // flashes
-            mActive = true;
-            mHandler.post(mStrobeRunnable);
+            strobe.setStrobeOn();
+
+            // sets max volume
+            volume.setToMaxVolume();
 
             // plays sound
-            if (loadedSound) {
-                streamId = sp.play(soundId, 1, 1, 1, -1, 1.0f);
+            if(soundEffect.isSoundLoaded()){
+                soundEffect.playSound(true);
             }
+            //if (loadedSound) {
+           //     streamId = sp.play(soundId, 1, 1, 1, -1, 1.0f);
+           // }
             return true;
         }
 
@@ -119,15 +122,16 @@ public class ActivityMain extends Activity implements OnTouchListener, SoundPool
             vb.cancel();
 
             // stops flash
-            mHandler.removeCallbacks(mStrobeRunnable);
-            if (cam != null) {
-                cam.setParameters(pOff);
-            }
+            strobe.setStrobeOff();
 
             // stops playing sound
-            if (loadedSound) {
-                sp.stop(streamId);
+            if(soundEffect.isSoundLoaded()){
+                soundEffect.stopSound();
             }
+
+            //if (loadedSound) {
+           //     sp.stop(streamId);
+           // }
             return false;
         }
         return false;
@@ -141,15 +145,19 @@ public class ActivityMain extends Activity implements OnTouchListener, SoundPool
         vb.cancel();
 
         // releases the camera if not already done
-        if (cam != null) {
-            cam.release();
-        }
+        strobe.releaseCamera();
+
 
         // stops the sound effects and releases the SoundPool
-        if (loadedSound) {
-            sp.stop(soundId);
-            sp.release();
+        if(soundEffect.isSoundLoaded()){
+            soundEffect.stopSound();
+            soundEffect.releaseSoundPool();
         }
+
+       //  if (loadedSound) {
+       //     sp.stop(soundId);
+       //     sp.release();
+       // }
 
         // exits the Activity
         finish();
@@ -170,34 +178,12 @@ public class ActivityMain extends Activity implements OnTouchListener, SoundPool
         switch (item.getItemId()) {
 
             case R.id.action_settings:
-                //Intent intent = new Intent(this, about.class);
-                //startActivity(intent);
+                Intent intent = new Intent(this, ActivitySettings.class);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    private final Runnable mStrobeRunnable = new Runnable() {
-
-        public void run() {
-            if (mActive) {
-                if (mSwap) {
-
-                    // turns on
-                    cam.setParameters(pOn);
-                    mSwap = false;
-                    mHandler.postDelayed(mStrobeRunnable, strobeInterval);
-                } else {
-
-                    // turns off
-                    cam.setParameters(pOff);
-                    mSwap = true;
-                    mHandler.postDelayed(mStrobeRunnable, strobeInterval);
-                }
-            }
-        }
-    };
-
 
 }

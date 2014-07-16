@@ -5,4 +5,34 @@
         <item name="android:background">@android:color/white</item>
     </style>
 
+
+    <!-- Settings Activity theme. -->
+    <style name="SettingsTheme" parent="@style/Theme.AppCompat.Light">
+        <item name="android:actionBarStyle">@style/SettingsActionBar</item>
+
+        <!-- Support library compatibility -->
+        <item name="actionBarStyle">@style/SettingsActionBar</item>
+    </style>
+
+    <!-- Settings ActionBar -->
+    <style name="SettingsActionBar" parent="@style/Widget.AppCompat.Base.ActionBar">
+        <item name="android:background">@color/grey</item>
+        <item name="android:titleTextStyle">@style/SettingsActionBar.TextStyle</item>
+        <item name="android:icon">@drawable/ic_menu_settings</item>
+
+        <!-- Support library compatibility -->
+        <item name="background">@color/grey</item>
+        <item name="titleTextStyle">@style/SettingsActionBar</item>
+        <item name="icon">@drawable/ic_menu_settings</item>
+
+    </style>
+
+    <style name="SettingsActionBar.TextStyle" parent="@android:style/TextAppearance">
+
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">21sp</item>
+
+    </style>
+
+
 </resources>
