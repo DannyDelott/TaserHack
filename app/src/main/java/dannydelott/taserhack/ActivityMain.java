@@ -2,14 +2,9 @@ package dannydelott.taserhack;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -35,10 +30,6 @@ public class ActivityMain extends Activity implements OnTouchListener {
 
     // handles sound effects
     private SoundEffect soundEffect;
-    private SoundPool sp;
-    private int soundId;
-    private int streamId;
-    private boolean loadedSound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +47,7 @@ public class ActivityMain extends Activity implements OnTouchListener {
         // sets up strobe light
         strobe = Strobe.newInstance(35);
         if (strobe == null) {
-            Log.d("error", "fuck");
+            Log.d("error", "cannot load strobe");
         }
 
         // sets up volume
@@ -68,7 +59,6 @@ public class ActivityMain extends Activity implements OnTouchListener {
 
         // makes background clickable
         background.setOnTouchListener(this);
-
 
 
     }
@@ -134,27 +124,5 @@ public class ActivityMain extends Activity implements OnTouchListener {
         finish();
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.activity_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        // Handle item selection
-        switch (item.getItemId()) {
-
-            case R.id.action_settings:
-                Intent intent = new Intent(this, ActivitySettings.class);
-                startActivity(intent);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
 
 }
