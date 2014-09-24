@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.RelativeLayout;
 
-public class ActivityMain extends Activity implements OnTouchListener {
+public class ActivityMain extends Activity implements OnTouchListener, SoundEffect.SoundLoadedListener {
 
     // ///////////////////
     // GLOBAL VARIABLES //
@@ -56,9 +56,7 @@ public class ActivityMain extends Activity implements OnTouchListener {
 
         // sets up sound effects
         soundEffect = SoundEffect.newInstance(this, R.raw.taser3);
-
-        // makes background clickable
-        background.setOnTouchListener(this);
+        soundEffect.setSoundLoadedListener(this);
 
 
     }
@@ -125,4 +123,10 @@ public class ActivityMain extends Activity implements OnTouchListener {
     }
 
 
+    @Override
+    public void SoundLoadedComplete() {
+
+        // makes background clickable
+        background.setOnTouchListener(this);
+    }
 }
